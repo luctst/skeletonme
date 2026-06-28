@@ -5,6 +5,8 @@
 No more hand-specifying `width`, `height`, and `count` for every loading state.
 Wrap your real component — SkeletonMe measures it and renders a matching placeholder.
 
+**Zero runtime dependencies** (just React) · React 18+ · styles auto-injected, no separate CSS import.
+
 ```bash
 pnpm add skeletonme   # or npm / yarn
 ```
@@ -30,7 +32,10 @@ function Profile({ user, loading }) {
 `showSkeleton={true}` → a shimmering grey box the size of your card.
 `showSkeleton={false}` → your card, untouched. That's the whole API.
 
-▶ **[Try it live on StackBlitz](https://stackblitz.com/)** _(link TBD once published)_
+> **First-render note (current build):** auto-measurement reads the children's size
+> _after_ they've rendered once. If `showSkeleton` starts `true` (e.g. an initial
+> loading state) there's nothing measured yet — pass `width`/`height` (or a custom
+> `skeleton`) so the placeholder is visible. See [Status](#status).
 
 ## Server-side rendering (Next.js / Remix)
 
@@ -78,8 +83,14 @@ import type { SkeletonMeProps } from 'skeletonme'
 
 ## Status
 
-Early (`0.x`) — the API may change before 1.0. The current build is scaffolding;
-the auto-measurement engine is under active development. See [`PLAN.md`](./PLAN.md).
+Early (`0.x`) — the API may change before 1.0. **The current build is a stub:**
+
+- The `showSkeleton` / `skeleton` / `width` / `height` API is stable and works today.
+- Auto-measurement only captures size **after** children have rendered once. On a
+  first render with `showSkeleton={true}`, pass explicit `width`/`height` (or a custom
+  `skeleton`) — otherwise the placeholder renders at 0×0 (a dev-mode warning fires).
+- The v1 engine (reliable auto-measure from children, including SSR) is under active
+  development. See [`PLAN.md`](./PLAN.md) for the roadmap.
 
 ## License
 
