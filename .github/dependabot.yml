@@ -1,0 +1,21 @@
+version: 2
+updates:
+  # Keep GitHub Actions (incl. the SHA-pinned ones in release.yml) up to date.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ci
+
+  # Keep dev dependencies up to date.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: chore
+    groups:
+      dev-dependencies:
+        patterns:
+          - '*'
