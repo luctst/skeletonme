@@ -1,0 +1,28 @@
+.skeletonme {
+  display: block;
+  border-radius: var(--skeletonme-radius, 4px);
+  background-color: var(--skeletonme-base, #e2e8f0);
+  background-image: linear-gradient(
+    90deg,
+    var(--skeletonme-base, #e2e8f0) 0%,
+    var(--skeletonme-highlight, #f1f5f9) 50%,
+    var(--skeletonme-base, #e2e8f0) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeletonme-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes skeletonme-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeletonme {
+    animation: none;
+  }
+}

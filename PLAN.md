@@ -1,0 +1,231 @@
+# SkeletonMe — Project Plan (DX Review Output)
+
+> A shareable React component. Wrap any JSX in `<SkeletonMe>`; flip one boolean to
+> swap real content for an auto-sized, shimmering skeleton placeholder. Open source,
+> non-commercial.
+
+```jsx
+<SkeletonMe showSkeleton={isLoading}>
+  <UserCard name="Lucas" role="Senior Engineer" />
+</SkeletonMe>
+```
+
+---
+
+## Locked Decisions (from review)
+
+| Decision | Choice | Why |
+|---|---|---|
+| Repo structure | **Flat single repo** (pnpm, no workspace) | One component, no docs site / 2nd package yet. Monorepo deferred until it earns its keep. Original "use monorepo" brief intentionally dropped. |
+| Target developer | **Frontend dev adding a feature** | Works in Next.js/Vite, expects TS types + SSR safety + a copy-paste example. |
+| v1 API surface | `showSkeleton` + `skeleton` escape hatch + shimmer + CSS-var theming | Honest MVP: trivial default, one escape hatch so users own edge cases. |
+| Build | **tsup** (dual ESM/CJS + `.d.ts`) | Zero-config, right-sized for a single-component lib. |
+| React dependency | `react >=18` as a **peerDependency** | Avoids duplicate-React bugs; covers 18 + 19. |
+| Measurement | `ref` + `ResizeObserver` on real children | React-correct; cloning-hidden breaks refs/effects/portals. |
+
+---
+
+## Target Developer Persona
+
+```
+TARGET DEVELOPER PERSONA
+========================
+Who:       Frontend dev (mid-level), TypeScript + React, ships in Next.js or Vite.
+Context:   Has a loading state (data fetch, lazy route). Tired of hand-building
+           skeletons or hand-specifying width/height/count in react-loading-skeleton.
+Tolerance: ~2 minutes / ~3 steps. If the first example doesn't render or SSR throws
+           a hydration error, they uninstall and move on.
+Expects:   npm install, named import, TS types out of the box, works in Next.js
+           without a "use client" surprise, copy-paste example that runs as-is.
+```
+
+---
+
+## Developer Empathy Narrative (T0)
+
+> I have a `<ProfileCard>` that flickers blank while data loads. I search "react skeleton
+> auto size" and find **SkeletonMe**. The README's first code block is literally my use case —
+> wrap the component, pass `showSkeleton={isLoading}`, done. No `width`, no `height`, no `count`
+> to guess at. That's the hook: *it measures my component for me.*
+>
+> I run `pnpm add skeletonme`, paste the 5-line example, and... it works — a grey box exactly
+> the size of my card, shimmering. I smile. Then I deploy to Vercel and on first server render
+> the skeleton is a 0px-tall sliver because there's no DOM to measure server-side. **If the README
+> didn't warn me and hand me the fix, this is where I'd rage-uninstall.** So the SSR story has to
+> be on the box, not in the FAQ.
+
+**Implication for the plan:** the SSR caveat + fix is a **Pass-1 blocker**, not a footnote.
+
+---
+
+## Competitive DX Benchmark
+
+> Reference-based (no live web search this pass). The incumbent is **react-loading-skeleton**
+> (~700k weekly downloads) — note its API *requires manual sizing*, which is exactly SkeletonMe's wedge.
+
+```
+Tool                    | TTHW    | Notable DX choice                          | Wedge for SkeletonMe
+react-loading-skeleton  | ~2 min  | Tiny API, but YOU specify width/height/count| We auto-measure — zero sizing
+MUI <Skeleton/>         | ~3 min  | variant="text|circular", manual sizing      | We derive shape from children
+react-content-loader    | ~5 min  | SVG, super-customizable, steep             | We're wrap-and-go, no SVG authoring
+SkeletonMe (target)     | <2 min  | Wrap real children → auto-sized skeleton    | THE differentiator
+```
+
+**Target tier: Competitive→Champion (< 2 min TTHW, ≤ 3 steps).** The auto-measurement is the
+reason to switch from the incumbent — it must be the first thing in the README.
+
+---
+
+## Magical Moment
+
+**The moment:** "I wrapped my component in one line and got a correctly-sized skeleton **without
+specifying any dimensions**." That's the smile — and the competitive wedge against react-loading-skeleton.
+
+**Delivery vehicle:** **Copy-paste README example + a live StackBlitz "Try it" link.**
+- Low effort, high impact for a React lib; no hosted infra to maintain (fits OSS/non-commercial).
+- README example must be complete and runnable (real import, real children, real `useState`).
+- StackBlitz link gives zero-install try-before-you-buy.
+
+---
+
+## v1 Scope
+
+**In v1**
+- `<SkeletonMe showSkeleton>{children}</SkeletonMe>` — auto-measure children via `ref` + `ResizeObserver`.
+- `skeleton?: ReactNode` — escape hatch: supply your own placeholder when auto-measure won't fit.
+- `width?`/`height?` — explicit-size escape hatch for the **data-less / SSR** case (no children to measure yet).
+- Default **shimmer** animation, hardcoded keyframe.
+- Theming via **CSS custom properties** only: `--skeletonme-base`, `--skeletonme-highlight`, `--skeletonme-radius`.
+- TypeScript types, zero runtime deps (React + CSS only).
+- `tsup` dual ESM/CJS build, `exports` map, `react >=18` peer dep.
+- README with the magical-moment example + StackBlitz link + **SSR caveat & fix**.
+
+**NOT in v1** (deferred, with rationale)
+- Monorepo / docs site / examples app — *no second package yet; revisit when docs site is real.*
+- Animation variants (`pulse | none`) — *default shimmer is enough; adds API surface.*
+- `count` / repeat sugar — *users can `.map()`; convenience, not adoption-blocking.*
+- Shape presets (`variant="text|circle|rect"`) — *different philosophy (explicit vs magical); belongs to a future low-level primitive.*
+- Theme provider / context — *CSS vars cover theming with zero API.*
+- Fully SSR-safe auto-measurement — *v1 documents the limitation + ships explicit-size fallback; solve true SSR measurement in v1.1.*
+
+---
+
+## Repo Structure (Flat)
+
+```
+skeletonme/
+├─ package.json            # name: skeletonme, peerDeps react>=18, exports map, scripts
+├─ tsconfig.json           # strict, moduleResolution: "bundler", jsx: react-jsx
+├─ tsup.config.ts          # entry src/index.ts, format [esm,cjs], dts, treeshake
+├─ vitest.config.ts        # jsdom env
+├─ .eslintrc.cjs / eslint.config.js
+├─ .prettierrc
+├─ .changeset/             # Changesets — OSS release flow
+├─ .github/workflows/
+│  ├─ ci.yml               # lint • typecheck • test • build
+│  └─ release.yml          # changesets → npm publish
+├─ README.md               # magical-moment example + StackBlitz + SSR caveat
+├─ CONTRIBUTING.md
+├─ LICENSE                 # MIT
+├─ CHANGELOG.md            # managed by changesets
+└─ src/
+   ├─ index.ts             # barrel — public API only
+   ├─ SkeletonMe.tsx       # the component
+   ├─ SkeletonMe.types.ts  # SkeletonMeProps
+   ├─ useMeasuredSize.ts    # ref + ResizeObserver hook
+   ├─ skeletonme.css       # shimmer keyframe + base classes (importable)
+   └─ SkeletonMe.test.tsx   # Vitest + Testing Library
+```
+
+---
+
+## DX Review — Pass Findings & Fixes
+
+**Pass 1 — Getting Started (target < 2 min):** First README block = the magical-moment example,
+complete and runnable. `pnpm add skeletonme` → import → wrap. StackBlitz link for zero-install.
+**Blocker fixed:** SSR caveat + `width`/`height` fallback documented up front so Next.js devs
+don't hit a 0px skeleton and bail.
+
+**Pass 2 — API design:** Matches the persona's mental model — `<SkeletonMe showSkeleton>` reads
+like English. Every prop has a default; simplest call (`showSkeleton` only) is production-ready.
+`skeleton` + `width`/`height` are the progressive-disclosure escape hatches.
+
+**Pass 3 — Errors / uncertainty:** Dev-only `console.warn` when `showSkeleton` is true but children
+measure to 0×0 and no `width`/`height`/`skeleton` was provided — names the SSR/data-less cause and
+points to the fix prop. (No silent blank skeletons.)
+
+**Pass 4 — Docs:** README is the docs for v1. Sections: 30-second example → SSR & Next.js →
+escape hatches → theming via CSS vars → TypeScript. Every snippet copy-paste-complete.
+
+**Pass 5 — Upgrade path:** Changesets + semver from commit #1. Pre-1.0 (`0.x`) signals API may move.
+
+**Pass 6 — Dev environment:** TS types shipped. `"use client"` guidance for Next App Router.
+Works in CI via `ci.yml` (lint/typecheck/test/build, non-interactive).
+
+**Pass 7 — Community:** MIT license, CONTRIBUTING.md, GitHub issue templates. `pnpm i && pnpm test`
+must work on a fresh clone.
+
+**Pass 8 — Measurement:** No analytics (non-commercial). Track TTHW informally via README clarity;
+GitHub issues are the feedback loop.
+
+---
+
+## DX Scorecard (plan-level)
+
+```
++====================================================================+
+|              DX PLAN REVIEW — SCORECARD                            |
++====================================================================+
+| Dimension            | Initial  | Final  | Notes                   |
+|----------------------|----------|--------|-------------------------|
+| Getting Started      |  4/10    |  9/10  | SSR caveat fixed up front|
+| API/CLI/SDK          |  6/10    |  9/10  | escape hatches added     |
+| Error Messages       |  2/10    |  7/10  | 0×0 dev warning planned  |
+| Documentation        |  3/10    |  8/10  | magical example first    |
+| Upgrade Path         |  3/10    |  8/10  | changesets + semver      |
+| Dev Environment      |  4/10    |  8/10  | TS + Next "use client"   |
+| Community            |  4/10    |  8/10  | MIT + CONTRIBUTING + CI  |
+| DX Measurement       |  2/10    |  5/10  | OSS: issues-driven       |
++--------------------------------------------------------------------+
+| TTHW                 | ~5 min   | <2 min | wrap-and-go example      |
+| Competitive Rank     | Competitive→Champion (auto-measure wedge)   |
+| Magical Moment       | designed via README example + StackBlitz    |
+| Product Type         | Library / SDK (React component)             |
+| Mode                 | DX POLISH                                   |
+| Overall DX           |  4/10    |  8/10  | +4                       |
++====================================================================+
+```
+
+---
+
+## DX Implementation Checklist
+
+```
+[ ] TTHW < 2 min: README opens with the wrap-and-go example
+[ ] pnpm add skeletonme → import → wrap (3 steps)
+[ ] First run produces a correctly-sized shimmering skeleton
+[ ] Magical moment: auto-measure (no width/height needed) is the FIRST example
+[ ] StackBlitz "Try it live" link in README
+[ ] SSR / Next.js caveat + width/height fallback documented up front
+[ ] Dev-only warn on 0×0 measured skeleton with no fallback
+[ ] showSkeleton + skeleton + width/height all typed (SkeletonMeProps)
+[ ] Theming via --skeletonme-* CSS vars, documented
+[ ] tsup dual ESM/CJS + .d.ts; react>=18 peer dep; exports map
+[ ] sideEffects set correctly for the CSS file
+[ ] MIT LICENSE + CONTRIBUTING.md + issue templates
+[ ] CI: lint • typecheck • test • build on PR
+[ ] Changesets wired for releases; CHANGELOG maintained
+[ ] Fresh-clone `pnpm i && pnpm test` works
+```
+
+---
+
+## What Already Exists
+
+Nothing — greenfield empty directory. No code, no git, no docs to reuse. pnpm 10.28 / Node 22 installed.
+
+## Open DX Debt → TODOS (proposed)
+
+1. **True SSR-safe measurement** (v1.1) — auto-measure that doesn't render a 0px box server-side.
+2. **Live playground site** (when adopted) — promote StackBlitz link into a hosted docs/playground; this is also the trigger to revisit the monorepo decision.
+3. **Animation variants** (`pulse | none`) — only if requested by real users.
