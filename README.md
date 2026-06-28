@@ -90,7 +90,7 @@ Early (`0.x`) — the API may change before 1.0. **The current build is a stub:*
   first render with `showSkeleton={true}`, pass explicit `width`/`height` (or a custom
   `skeleton`) — otherwise the placeholder renders at 0×0 (a dev-mode warning fires).
 - The v1 engine (reliable auto-measure from children, including SSR) is under active
-  development. See [`PLAN.md`](./PLAN.md) for the roadmap.
+  development. See [`PLAN.md`](./skeletonme_docs/memory/PLAN.md) for the roadmap.
 
 ## License
 

@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 import type { SkeletonMeProps } from './SkeletonMe.types'
-import { useMeasuredSize } from './useMeasuredSize'
+import { useMeasuredSize } from './hooks/useMeasuredSize'
 import './skeletonme.css'
 
 /**
@@ -10,7 +10,7 @@ import './skeletonme.css'
  * STUB: renders a single placeholder box sized from `width`/`height` (or the
  * last measured size). The production implementation (owned by the component
  * work) should derive a multi-block skeleton from the children's measured
- * layout and handle the SSR / data-less cases. See PLAN.md.
+ * layout and handle the SSR / data-less cases. See skeletonme_docs/memory/PLAN.md.
  */
 export function SkeletonMe({
   showSkeleton,
