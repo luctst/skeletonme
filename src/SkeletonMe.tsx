@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 import type { SkeletonMeProps } from './SkeletonMe.types'
-import { useMeasuredSize } from './useMeasuredSize'
+import { useMeasuredSize } from './hooks/useMeasuredSize'
 import './skeletonme.css'
 
 /**
@@ -10,7 +10,7 @@ import './skeletonme.css'
  * STUB: renders a single placeholder box sized from `width`/`height` (or the
  * last measured size). The production implementation (owned by the component
  * work) should derive a multi-block skeleton from the children's measured
- * layout and handle the SSR / data-less cases. See PLAN.md.
+ * layout and handle the SSR / data-less cases.
  */
 export function SkeletonMe({
   showSkeleton,
@@ -49,6 +49,12 @@ export function SkeletonMe({
 
   const skeletonStyle: CSSProperties = { width: resolvedWidth, height: resolvedHeight, ...style }
 
+  // NOTE: still the single-box stub. v1 replaces this with the multi-block
+  // engine — walk the rendered children (TreeWalker + per-leaf
+  // getBoundingClientRect) and overlay one shimmer rect per leaf. Boundaries:
+  // content-sized text skeletons at one line; children that render null / empty
+  // lists during load fall back to the `skeleton` prop (the template model
+  // closes that in v1.1).
   return (
     <div
       className={['skeletonme', className].filter(Boolean).join(' ')}
