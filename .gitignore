@@ -5,3 +5,8 @@ coverage/
 .DS_Store
 .idea/
 .vscode/
+
+# QA artifacts
+.qa-reports/
+.qa-build/
+qa/node_modules/
