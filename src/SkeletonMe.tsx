@@ -49,13 +49,12 @@ export function SkeletonMe({
 
   const skeletonStyle: CSSProperties = { width: resolvedWidth, height: resolvedHeight, ...style }
 
-  // ponytail: single measured box, not a multi-block mirror of the children.
-  // Auto-mirroring the children's DOM only works when their layout is sized
-  // independently of the loading data (CSS-fixed dimensions / static content);
-  // for content-sized subtrees the data-less render collapses and there is
-  // nothing useful to measure. Build the leaf-rect walker (the deferred v1.1
-  // engine) ONLY if issues show the box + `skeleton` escape hatch is the real
-  // blocker.
+  // NOTE: still the single-box stub. v1 replaces this with the multi-block
+  // engine — walk the rendered children (TreeWalker + per-leaf
+  // getBoundingClientRect) and overlay one shimmer rect per leaf. Boundaries:
+  // content-sized text skeletons at one line; children that render null / empty
+  // lists during load fall back to the `skeleton` prop (the template model
+  // closes that in v1.1).
   return (
     <div
       className={['skeletonme', className].filter(Boolean).join(' ')}

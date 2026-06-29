@@ -21,7 +21,7 @@
 | v1 API surface | `showSkeleton` + `skeleton` escape hatch + shimmer + CSS-var theming | Honest MVP: trivial default, one escape hatch so users own edge cases. |
 | Build | **tsup** (dual ESM/CJS + `.d.ts`) | Zero-config, right-sized for a single-component lib. |
 | React dependency | `react >=18` as a **peerDependency** | Avoids duplicate-React bugs; covers 18 + 19. |
-| Measurement | `ref` + `ResizeObserver` on real children | React-correct; cloning-hidden breaks refs/effects/portals. |
+| Measurement | `ref` + `ResizeObserver` + per-leaf `getBoundingClientRect` walk of the **rendered** children | Reads the real rendered DOM (no cloning → refs/effects/portals intact); derives a multi-block skeleton, not a single box. |
 
 ---
 
@@ -48,8 +48,8 @@ Expects:   npm install, named import, TS types out of the box, works in Next.js
 > wrap the component, pass `showSkeleton={isLoading}`, done. No `width`, no `height`, no `count`
 > to guess at. That's the hook: *it measures my component for me.*
 >
-> I run `pnpm add skeletonme`, paste the 5-line example, and... it works — a grey box exactly
-> the size of my card, shimmering. I smile. Then I deploy to Vercel and on first server render
+> I run `pnpm add skeletonme`, paste the 5-line example, and... it works — a shimmering
+> placeholder shaped like my card, sized to it. I smile. Then I deploy to Vercel and on first server render
 > the skeleton is a 0px-tall sliver because there's no DOM to measure server-side. **If the README
 > didn't warn me and hand me the fix, this is where I'd rage-uninstall.** So the SSR story has to
 > be on the box, not in the FAQ.
@@ -90,18 +90,30 @@ specifying any dimensions**." That's the smile — and the competitive wedge aga
 
 ## v1 Scope
 
-**Auto-measure contract (the boundary of the magic).** Auto-measurement works
-when the wrapped subtree renders at a useful size *without its data* — i.e. its
-dimensions come from CSS (fixed heights, avatar slots, line boxes) or static
-content. It happens after children render once, in the `showSkeleton === true`
-window, which is exactly when the loading data is absent; so for **content-sized**
-subtrees (text blocks, lists, feeds) the data-less render collapses and there is
-nothing useful to measure. That case is not a bug — the `width`/`height`/`skeleton`
-props are the explicit fallback for it. v1 ships a single measured box, *not* a
-multi-block mirror of the children's DOM.
+**Auto-measure contract (the boundary of the magic).** v1 auto-derives a
+**multi-block** skeleton by walking the children's *rendered* DOM: after they
+render, a `TreeWalker` collects leaf nodes, `getBoundingClientRect` sizes each,
+and one shimmer rect is overlaid per leaf. This reads the real rendered output,
+so it is component-agnostic (a `<UserCard/>` and an inline `<div>` measure
+identically) and needs no cloning — refs/effects/portals stay intact. It works
+when the children render their **structure** during loading (every node present,
+content blank), which is the normal case when layout comes from CSS or UA
+defaults. Known boundaries, by design — not bugs:
+
+- **Content-sized text collapses to one line.** An empty block has no line box,
+  so UA styles give it no height; a node with any inline content is ~`line-height`
+  tall. Text nodes therefore skeleton at one line, which can under-size a wrapped
+  paragraph → a small layout shift when the real (taller) content arrives.
+- **Absent structure can't be mirrored.** A child that `return null`s or maps an
+  empty array (`items.map([])`) renders fewer/zero nodes than its loaded form.
+  The walker only mirrors nodes that exist; lists/feeds that render nothing during
+  load fall back to the `skeleton` escape hatch. The **template model** (TODO
+  below) closes this in v1.1.
+- **Data-less / SSR.** No DOM to walk server-side or before first render —
+  `width`/`height` give an explicit single-box fallback.
 
 **In v1**
-- `<SkeletonMe showSkeleton>{children}</SkeletonMe>` — auto-measure children via `ref` + `ResizeObserver`.
+- `<SkeletonMe showSkeleton>{children}</SkeletonMe>` — auto-derive a **multi-block** skeleton from the children's rendered DOM (`TreeWalker` + per-leaf `getBoundingClientRect`; `ResizeObserver` tracks reflow).
 - `skeleton?: ReactNode` — escape hatch: supply your own placeholder when auto-measure won't fit.
 - `width?`/`height?` — explicit-size escape hatch for the **data-less / SSR** case (no children to measure yet).
 - Default **shimmer** animation, hardcoded keyframe.
@@ -239,4 +251,4 @@ Nothing — greenfield empty directory. No code, no git, no docs to reuse. pnpm 
 1. **True SSR-safe measurement** (v1.1) — auto-measure that doesn't render a 0px box server-side.
 2. **Live playground site** (when adopted) — promote StackBlitz link into a hosted docs/playground; this is also the trigger to revisit the monorepo decision.
 3. **Animation variants** (`pulse | none`) — only if requested by real users.
-4. **Auto multi-block skeleton engine** (v1.1, deferred) — walk the rendered children (visibly-hidden) with a `TreeWalker` + per-leaf `getBoundingClientRect`, overlay one shimmer rect per leaf. **Trigger:** repeated user reports that the single measured box + `skeleton` escape hatch is the real adoption blocker. Until then, YAGNI — the box covers data-independent layouts and the escape hatch covers the rest.
+4. **Template-measured skeleton** (v1.1) — `template?: ReactNode`: render a *populated* sample of the component offscreen, walk **its** DOM, and use that as the skeleton. Closes the case the v1 live-children walker structurally can't — components that `return null` or render empty lists during loading — because the template always has data (so the structure exists to measure). Needs an offscreen-render + SSR / `"use client"` story.
