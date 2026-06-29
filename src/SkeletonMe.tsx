@@ -10,7 +10,7 @@ import './skeletonme.css'
  * STUB: renders a single placeholder box sized from `width`/`height` (or the
  * last measured size). The production implementation (owned by the component
  * work) should derive a multi-block skeleton from the children's measured
- * layout and handle the SSR / data-less cases. See skeletonme_docs/memory/PLAN.md.
+ * layout and handle the SSR / data-less cases.
  */
 export function SkeletonMe({
   showSkeleton,
@@ -53,8 +53,9 @@ export function SkeletonMe({
   // Auto-mirroring the children's DOM only works when their layout is sized
   // independently of the loading data (CSS-fixed dimensions / static content);
   // for content-sized subtrees the data-less render collapses and there is
-  // nothing useful to measure. Build the leaf-rect walker (see PLAN.md v1.1)
-  // ONLY if issues show the box + `skeleton` escape hatch is the real blocker.
+  // nothing useful to measure. Build the leaf-rect walker (the deferred v1.1
+  // engine) ONLY if issues show the box + `skeleton` escape hatch is the real
+  // blocker.
   return (
     <div
       className={['skeletonme', className].filter(Boolean).join(' ')}
