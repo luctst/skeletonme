@@ -1,16 +1,13 @@
 import type { CSSProperties } from 'react'
 import type { SkeletonMeProps } from './SkeletonMe.types'
-import { useMeasuredSize } from './hooks/useMeasuredSize'
+import { useSkeletonRects } from './hooks/useSkeletonRects'
 import './skeletonme.css'
 
+const hiddenChildrenStyle: CSSProperties = { visibility: 'hidden' }
+
 /**
- * Wrap any JSX. When `showSkeleton` is true, render an auto-sized shimmering
- * placeholder; otherwise render the children as-is.
- *
- * STUB: renders a single placeholder box sized from `width`/`height` (or the
- * last measured size). The production implementation (owned by the component
- * work) should derive a multi-block skeleton from the children's measured
- * layout and handle the SSR / data-less cases.
+ * Wrap any JSX. When `showSkeleton` is true, measure the rendered children and
+ * overlay one shimmer rect per leaf; otherwise render the children as-is.
  */
 export function SkeletonMe({
   showSkeleton,
@@ -21,25 +18,68 @@ export function SkeletonMe({
   className,
   style,
 }: SkeletonMeProps) {
-  const [measureRef, size] = useMeasuredSize<HTMLDivElement>()
+  const auto = showSkeleton && !skeleton
+  const [setRef, rects] = useSkeletonRects<HTMLDivElement>(auto)
 
   if (!showSkeleton) {
     return (
-      <div ref={measureRef} className={className} style={style}>
+      <div className={className} style={style}>
         {children}
       </div>
     )
   }
 
-  // Escape hatch: caller-provided placeholder wins.
   if (skeleton) {
     return <>{skeleton}</>
   }
 
-  const resolvedWidth = width ?? (size.width || undefined)
-  const resolvedHeight = height ?? (size.height || undefined)
+  // Not measured yet: keep children mounted but hidden so the engine can measure them.
+  if (rects === null) {
+    return (
+      <div ref={setRef} aria-hidden="true" style={{ ...style, ...hiddenChildrenStyle }}>
+        {children}
+      </div>
+    )
+  }
 
-  if (process.env.NODE_ENV !== 'production' && !resolvedWidth && !resolvedHeight) {
+  if (rects.length > 0) {
+    return (
+      <div className={className} style={{ position: 'relative', ...style }}>
+        <div ref={setRef} aria-hidden="true" style={hiddenChildrenStyle}>
+          {children}
+        </div>
+        {rects.map((rect, i) => (
+          <div
+            key={i}
+            className="skeletonme"
+            data-skeletonme=""
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              left: rect.x,
+              top: rect.y,
+              width: rect.width,
+              height: rect.height,
+            }}
+          />
+        ))}
+      </div>
+    )
+  }
+
+  // No measurable leaves (data-less / SSR): fall back to an explicit box.
+  if (width || height) {
+    return (
+      <div
+        className={['skeletonme', className].filter(Boolean).join(' ')}
+        style={{ width, height, ...style }}
+        data-skeletonme=""
+        aria-hidden="true"
+      />
+    )
+  }
+
+  if (process.env.NODE_ENV !== 'production') {
     console.warn(
       '[SkeletonMe] showSkeleton is true but the skeleton has no size. There were ' +
         'no measured children (common during SSR or before data loads). Pass `width`/' +
@@ -47,20 +87,5 @@ export function SkeletonMe({
     )
   }
 
-  const skeletonStyle: CSSProperties = { width: resolvedWidth, height: resolvedHeight, ...style }
-
-  // NOTE: still the single-box stub. v1 replaces this with the multi-block
-  // engine — walk the rendered children (TreeWalker + per-leaf
-  // getBoundingClientRect) and overlay one shimmer rect per leaf. Boundaries:
-  // content-sized text skeletons at one line; children that render null / empty
-  // lists during load fall back to the `skeleton` prop (the template model
-  // closes that in v1.1).
-  return (
-    <div
-      className={['skeletonme', className].filter(Boolean).join(' ')}
-      style={skeletonStyle}
-      data-skeletonme=""
-      aria-hidden="true"
-    />
-  )
+  return null
 }
