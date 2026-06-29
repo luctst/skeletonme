@@ -33,7 +33,7 @@ export function useSkeletonRects<T extends HTMLElement>(
     const observer = new ResizeObserver(() => measure())
     observer.observe(node)
     return () => observer.disconnect()
-  }, [measure])
+  }, [measure, enabled])
 
   return [setRef, rects]
 }
