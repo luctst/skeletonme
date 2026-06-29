@@ -90,6 +90,16 @@ specifying any dimensions**." That's the smile — and the competitive wedge aga
 
 ## v1 Scope
 
+**Auto-measure contract (the boundary of the magic).** Auto-measurement works
+when the wrapped subtree renders at a useful size *without its data* — i.e. its
+dimensions come from CSS (fixed heights, avatar slots, line boxes) or static
+content. It happens after children render once, in the `showSkeleton === true`
+window, which is exactly when the loading data is absent; so for **content-sized**
+subtrees (text blocks, lists, feeds) the data-less render collapses and there is
+nothing useful to measure. That case is not a bug — the `width`/`height`/`skeleton`
+props are the explicit fallback for it. v1 ships a single measured box, *not* a
+multi-block mirror of the children's DOM.
+
 **In v1**
 - `<SkeletonMe showSkeleton>{children}</SkeletonMe>` — auto-measure children via `ref` + `ResizeObserver`.
 - `skeleton?: ReactNode` — escape hatch: supply your own placeholder when auto-measure won't fit.
@@ -229,3 +239,4 @@ Nothing — greenfield empty directory. No code, no git, no docs to reuse. pnpm 
 1. **True SSR-safe measurement** (v1.1) — auto-measure that doesn't render a 0px box server-side.
 2. **Live playground site** (when adopted) — promote StackBlitz link into a hosted docs/playground; this is also the trigger to revisit the monorepo decision.
 3. **Animation variants** (`pulse | none`) — only if requested by real users.
+4. **Auto multi-block skeleton engine** (v1.1, deferred) — walk the rendered children (visibly-hidden) with a `TreeWalker` + per-leaf `getBoundingClientRect`, overlay one shimmer rect per leaf. **Trigger:** repeated user reports that the single measured box + `skeleton` escape hatch is the real adoption blocker. Until then, YAGNI — the box covers data-independent layouts and the escape hatch covers the rest.

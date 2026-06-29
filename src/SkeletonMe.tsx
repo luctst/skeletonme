@@ -49,6 +49,12 @@ export function SkeletonMe({
 
   const skeletonStyle: CSSProperties = { width: resolvedWidth, height: resolvedHeight, ...style }
 
+  // ponytail: single measured box, not a multi-block mirror of the children.
+  // Auto-mirroring the children's DOM only works when their layout is sized
+  // independently of the loading data (CSS-fixed dimensions / static content);
+  // for content-sized subtrees the data-less render collapses and there is
+  // nothing useful to measure. Build the leaf-rect walker (see PLAN.md v1.1)
+  // ONLY if issues show the box + `skeleton` escape hatch is the real blocker.
   return (
     <div
       className={['skeletonme', className].filter(Boolean).join(' ')}
