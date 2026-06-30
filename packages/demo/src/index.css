@@ -1,0 +1,4 @@
+@import '@workspace/ui/globals.css';
+
+/* Scan this app's source for class names (relative to this file). */
+@source './**/*.{ts,tsx}';
