@@ -5,7 +5,7 @@
 No more hand-specifying `width`, `height`, and box counts for every loading state.
 Wrap your real component — SkeletonMe measures it and renders a matching placeholder.
 
-**Zero runtime dependencies** (just React) · React 18+ · styles auto-injected, no separate CSS import.
+**Zero runtime dependencies** (just React) · React 18+ · styles auto-injected, no separate CSS import · early `0.x`, API may change before 1.0.
 
 ```bash
 pnpm add skeletonme   # or npm / yarn
@@ -83,14 +83,6 @@ Types ship with the package. Import `SkeletonMeProps` if you need it.
 ```ts
 import type { SkeletonMeProps } from 'skeletonme'
 ```
-
-## Status
-
-Early (`0.x`) — the API may change before 1.0.
-
-The **auto-measure engine ships today**. It walks your content's DOM tree, measures every leaf element, and renders a matched skeleton with multiple shimmer blocks shaped like your real content — not a single grey box. The skeleton re-measures on content reflow (responsive layouts work automatically).
-
-**Caveat:** auto-measurement requires DOM content. On the server (SSR) or before data loads, pass explicit `width`/`height` or a custom `skeleton`. A dev-mode console warning will alert you if this happens.
 
 ## License
 
