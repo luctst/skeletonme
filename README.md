@@ -2,10 +2,10 @@
 
 > Wrap any JSX and swap it for an auto-sized, shimmering skeleton with **one boolean**.
 
-No more hand-specifying `width`, `height`, and `count` for every loading state.
+No more hand-specifying `width`, `height`, and box counts for every loading state.
 Wrap your real component — SkeletonMe measures it and renders a matching placeholder.
 
-**Zero runtime dependencies** (just React) · React 18+ · styles auto-injected, no separate CSS import.
+**Zero runtime dependencies** (just React) · React 18+ · styles auto-injected, no separate CSS import · early `0.x`, API may change before 1.0.
 
 ```bash
 pnpm add skeletonme   # or npm / yarn
@@ -14,7 +14,6 @@ pnpm add skeletonme   # or npm / yarn
 ## 30-second example
 
 ```jsx
-import { useState } from 'react'
 import { SkeletonMe } from 'skeletonme'
 
 function Profile({ user, loading }) {
@@ -29,13 +28,10 @@ function Profile({ user, loading }) {
 }
 ```
 
-`showSkeleton={true}` → a shimmering grey box the size of your card.
+`showSkeleton={true}` → shimmering blocks that mirror your content's structure (avatar, heading, text lines, etc.).
 `showSkeleton={false}` → your card, untouched. That's the whole API.
 
-> **First-render note (current build):** auto-measurement reads the children's size
-> _after_ they've rendered once. If `showSkeleton` starts `true` (e.g. an initial
-> loading state) there's nothing measured yet — pass `width`/`height` (or a custom
-> `skeleton`) so the placeholder is visible. See [Status](#status).
+> **Note:** Auto-measurement requires DOM content. On the server (SSR) or before data loads, pass explicit `width`/`height` or a custom `skeleton` — see [Server-side rendering](#server-side-rendering) below.
 
 ## Server-side rendering (Next.js / Remix)
 
@@ -51,13 +47,20 @@ an explicit size (or a custom `skeleton`):
 
 In the Next.js App Router, render SkeletonMe in a Client Component (`'use client'`).
 
-## Escape hatches
+## Props
 
-| Prop       | Type                  | Use it when…                                              |
-| ---------- | --------------------- | -------------------------------------------------------- |
-| `skeleton` | `ReactNode`           | Auto-measurement can't capture your layout — supply your own placeholder. |
-| `width`    | `number \| string`    | There are no children to measure yet (SSR / pre-data).   |
-| `height`   | `number \| string`    | Same as `width`.                                         |
+Wrap your real content as nested children (the JSX between the tags, as in the example above) — that's what SkeletonMe measures. The props below configure the rest:
+
+| Prop           | Type                 | Default      | Description                                                                                          |
+| -------------- | -------------------- | ------------ | -------------------------------------------------------------------------------------------------- |
+| `showSkeleton` | `boolean`            | _(required)_ | When `true`, render the skeleton placeholder. When `false`, render your content untouched.          |
+| `skeleton`     | `ReactNode`          | `undefined`  | **Escape hatch.** Render your own placeholder instead of the auto-generated one — use when auto-measurement can't capture your layout. |
+| `width`        | `number \| string`   | `undefined`  | **Escape hatch.** Explicit skeleton width, used when there's nothing to measure (SSR / before data loads). |
+| `height`       | `number \| string`   | `undefined`  | **Escape hatch.** Explicit skeleton height. See `width`.                                            |
+| `className`    | `string`             | `undefined`  | Forwarded to the rendered wrapper / skeleton element.                                               |
+| `style`        | `CSSProperties`      | `undefined`  | Forwarded to the rendered wrapper / skeleton element.                                               |
+
+The three escape hatches (`skeleton`, `width`, `height`) exist for the cases auto-measurement can't handle — a layout it can't capture, or no DOM to measure (SSR / pre-data).
 
 ## Theming
 
@@ -80,17 +83,6 @@ Types ship with the package. Import `SkeletonMeProps` if you need it.
 ```ts
 import type { SkeletonMeProps } from 'skeletonme'
 ```
-
-## Status
-
-Early (`0.x`) — the API may change before 1.0. **The current build is a stub:**
-
-- The `showSkeleton` / `skeleton` / `width` / `height` API is stable and works today.
-- Auto-measurement only captures size **after** children have rendered once. On a
-  first render with `showSkeleton={true}`, pass explicit `width`/`height` (or a custom
-  `skeleton`) — otherwise the placeholder renders at 0×0 (a dev-mode warning fires).
-- The v1 engine (reliable auto-measure from children, including SSR) is under active
-  development.
 
 ## License
 
