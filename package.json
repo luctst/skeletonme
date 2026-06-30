@@ -1,15 +1,8 @@
 {
-  "name": "skeletonme",
+  "name": "skeletonme-workspace",
   "version": "0.0.0",
-  "description": "Wrap any JSX and swap it for an auto-sized shimmering skeleton with one boolean.",
-  "keywords": [
-    "react",
-    "skeleton",
-    "loading",
-    "placeholder",
-    "shimmer",
-    "loader"
-  ],
+  "private": true,
+  "description": "Workspace root for the skeletonme library and its demo.",
   "license": "MIT",
   "author": "Lucas Tostée <lucas.tostee@gmail.com>",
   "repository": {
@@ -17,57 +10,24 @@
     "url": "https://github.com/luctst/skeletonme.git"
   },
   "type": "module",
-  "files": [
-    "dist"
-  ],
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    }
-  },
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "lint": "eslint .",
+    "build": "pnpm -r build",
+    "dev": "pnpm --filter skeletonme dev",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
     "format": "prettier --write .",
     "changeset": "changeset",
-    "release": "pnpm build && changeset publish"
-  },
-  "peerDependencies": {
-    "react": ">=18",
-    "react-dom": ">=18"
-  },
-  "peerDependenciesMeta": {
-    "react-dom": {
-      "optional": true
-    }
+    "release": "pnpm --filter skeletonme build && changeset publish"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.10",
     "@eslint/js": "^9.17.0",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.1.0",
-    "@types/react": "^19.0.2",
-    "@types/react-dom": "^19.0.2",
-    "esbuild": "^0.28.1",
     "eslint": "^9.17.0",
     "eslint-plugin-react-hooks": "^5.1.0",
-    "jsdom": "^25.0.1",
     "prettier": "^3.4.2",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "tsup": "^8.3.5",
     "typescript": "^5.7.2",
-    "typescript-eslint": "^8.18.1",
-    "vitest": "^3.0.0"
+    "typescript-eslint": "^8.18.1"
   },
   "packageManager": "pnpm@10.28.2",
   "pnpm": {
