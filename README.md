@@ -2,7 +2,7 @@
 
 > Wrap any JSX and swap it for an auto-sized, shimmering skeleton with **one boolean**.
 
-No more hand-specifying `width`, `height`, and `count` for every loading state.
+No more hand-specifying `width`, `height`, and box counts for every loading state.
 Wrap your real component — SkeletonMe measures it and renders a matching placeholder.
 
 **Zero runtime dependencies** (just React) · React 18+ · styles auto-injected, no separate CSS import.
@@ -14,7 +14,6 @@ pnpm add skeletonme   # or npm / yarn
 ## 30-second example
 
 ```jsx
-import { useState } from 'react'
 import { SkeletonMe } from 'skeletonme'
 
 function Profile({ user, loading }) {
