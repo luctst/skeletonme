@@ -29,13 +29,10 @@ function Profile({ user, loading }) {
 }
 ```
 
-`showSkeleton={true}` → a shimmering grey box the size of your card.
+`showSkeleton={true}` → shimmering blocks that mirror your content's structure (avatar, heading, text lines, etc.).
 `showSkeleton={false}` → your card, untouched. That's the whole API.
 
-> **First-render note (current build):** auto-measurement reads the children's size
-> _after_ they've rendered once. If `showSkeleton` starts `true` (e.g. an initial
-> loading state) there's nothing measured yet — pass `width`/`height` (or a custom
-> `skeleton`) so the placeholder is visible. See [Status](#status).
+> **Note:** Auto-measurement requires DOM content. On the server (SSR) or before data loads, pass explicit `width`/`height` or a custom `skeleton` — see [Server-side rendering](#server-side-rendering) below.
 
 ## Server-side rendering (Next.js / Remix)
 
@@ -83,14 +80,11 @@ import type { SkeletonMeProps } from 'skeletonme'
 
 ## Status
 
-Early (`0.x`) — the API may change before 1.0. **The current build is a stub:**
+Early (`0.x`) — the API may change before 1.0.
 
-- The `showSkeleton` / `skeleton` / `width` / `height` API is stable and works today.
-- Auto-measurement only captures size **after** children have rendered once. On a
-  first render with `showSkeleton={true}`, pass explicit `width`/`height` (or a custom
-  `skeleton`) — otherwise the placeholder renders at 0×0 (a dev-mode warning fires).
-- The v1 engine (reliable auto-measure from children, including SSR) is under active
-  development.
+The **auto-measure engine ships today**. It walks your content's DOM tree, measures every leaf element, and renders a matched skeleton with multiple shimmer blocks shaped like your real content — not a single grey box. The skeleton re-measures on content reflow (responsive layouts work automatically).
+
+**Caveat:** auto-measurement requires DOM content. On the server (SSR) or before data loads, pass explicit `width`/`height` or a custom `skeleton`. A dev-mode console warning will alert you if this happens.
 
 ## License
 
