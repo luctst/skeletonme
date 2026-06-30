@@ -49,10 +49,11 @@ In the Next.js App Router, render SkeletonMe in a Client Component (`'use client
 
 ## Props
 
+Wrap your real content as nested children (the JSX between the tags, as in the example above) — that's what SkeletonMe measures. The props below configure the rest:
+
 | Prop           | Type                 | Default      | Description                                                                                          |
 | -------------- | -------------------- | ------------ | -------------------------------------------------------------------------------------------------- |
-| `showSkeleton` | `boolean`            | _(required)_ | When `true`, render the skeleton placeholder. When `false`, render `children` untouched.            |
-| `children`     | `ReactNode`          | _(required)_ | Your real content. Measured to auto-size and shape the skeleton.                                    |
+| `showSkeleton` | `boolean`            | _(required)_ | When `true`, render the skeleton placeholder. When `false`, render your content untouched.          |
 | `skeleton`     | `ReactNode`          | `undefined`  | **Escape hatch.** Render your own placeholder instead of the auto-generated one — use when auto-measurement can't capture your layout. |
 | `width`        | `number \| string`   | `undefined`  | **Escape hatch.** Explicit skeleton width, used when there's nothing to measure (SSR / before data loads). |
 | `height`       | `number \| string`   | `undefined`  | **Escape hatch.** Explicit skeleton height. See `width`.                                            |
