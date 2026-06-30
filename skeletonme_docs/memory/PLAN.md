@@ -16,7 +16,7 @@
 
 | Decision | Choice | Why |
 |---|---|---|
-| Repo structure | **Flat single repo** (pnpm, no workspace) | One component, no docs site / 2nd package yet. Monorepo deferred until it earns its keep. Original "use monorepo" brief intentionally dropped. |
+| Repo structure | **pnpm workspace** — `packages/skeletonme` (lib) + `packages/demo` (Pages site) + `packages/ui` (shadcn components) | Was a flat single repo; the demo earned a 2nd package, so converting *now* (3 small packages, lib `dist/` byte-identical) was cheaper than retrofitting later. Published `skeletonme` unchanged. |
 | Target developer | **Frontend dev adding a feature** | Works in Next.js/Vite, expects TS types + SSR safety + a copy-paste example. |
 | v1 API surface | `showSkeleton` + `skeleton` escape hatch + shimmer + CSS-var theming | Honest MVP: trivial default, one escape hatch so users own edge cases. |
 | Build | **tsup** (dual ESM/CJS + `.d.ts`) | Zero-config, right-sized for a single-component lib. |
@@ -123,7 +123,7 @@ defaults. Known boundaries, by design — not bugs:
 - README with the magical-moment example + StackBlitz link + **SSR caveat & fix**.
 
 **NOT in v1** (deferred, with rationale)
-- Monorepo / docs site / examples app — *no second package yet; revisit when docs site is real.*
+- ~~Monorepo / docs site / examples app~~ — **shipped post-v1** as the pnpm workspace + `packages/demo` showcase (deployed to GitHub Pages). The demo was the second package that earned the conversion.
 - Animation variants (`pulse | none`) — *default shimmer is enough; adds API surface.*
 - `count` / repeat sugar — *users can `.map()`; convenience, not adoption-blocking.*
 - Shape presets (`variant="text|circle|rect"`) — *different philosophy (explicit vs magical); belongs to a future low-level primitive.*
@@ -132,31 +132,31 @@ defaults. Known boundaries, by design — not bugs:
 
 ---
 
-## Repo Structure (Flat)
+## Repo Structure (pnpm workspace)
+
+Private root delegates to packages via `pnpm -r` / `--filter`. Only
+`packages/skeletonme` is published; `demo` and `ui` are `private`.
 
 ```
 skeletonme/
-├─ package.json            # name: skeletonme, peerDeps react>=18, exports map, scripts
-├─ tsconfig.json           # strict, moduleResolution: "bundler", jsx: react-jsx
-├─ tsup.config.ts          # entry src/index.ts, format [esm,cjs], dts, treeshake
-├─ vitest.config.ts        # jsdom env
-├─ .eslintrc.cjs / eslint.config.js
+├─ package.json            # private workspace root: delegating scripts, shared dev tooling
+├─ pnpm-workspace.yaml      # packages: ['packages/*']
+├─ eslint.config.js         # shared flat config; ignores **/dist
 ├─ .prettierrc
-├─ .changeset/             # Changesets — OSS release flow
+├─ .changeset/             # Changesets — targets only `skeletonme`
 ├─ .github/workflows/
-│  ├─ ci.yml               # lint • typecheck • test • build
-│  └─ release.yml          # changesets → npm publish
-├─ README.md               # magical-moment example + StackBlitz + SSR caveat
-├─ CONTRIBUTING.md
-├─ LICENSE                 # MIT
-├─ CHANGELOG.md            # managed by changesets
-└─ src/
-   ├─ index.ts             # barrel — public API only
-   ├─ SkeletonMe.tsx       # the component
-   ├─ SkeletonMe.types.ts  # SkeletonMeProps
-   ├─ useMeasuredSize.ts    # ref + ResizeObserver hook
-   ├─ skeletonme.css       # shimmer keyframe + base classes (importable)
-   └─ SkeletonMe.test.tsx   # Vitest + Testing Library
+│  ├─ ci.yml               # build → lint • typecheck • test (build first: demo needs the lib's dist types)
+│  ├─ release.yml          # build lib → changesets → npm publish
+│  └─ deploy-demo.yml       # build demo → GitHub Pages (push to main)
+├─ README.md · CONTRIBUTING.md · LICENSE · CHANGELOG.md
+└─ packages/
+   ├─ skeletonme/           # the PUBLISHED library (name: skeletonme, react>=18 peer)
+   │  ├─ package.json · tsconfig.json · tsup.config.ts · vitest.config.ts
+   │  └─ src/               # index.ts, SkeletonMe.tsx, SkeletonMe.types.ts,
+   │                        # engine/collectLeafRects.ts, hooks/useSkeletonRects.ts, skeletonme.css
+   ├─ demo/                 # private — Vite + React Pages site (base '/skeletonme/')
+   │  └─ src/               # App.tsx + extensible examples/ registry (one global toggle)
+   └─ ui/                   # private — @workspace/ui: shadcn (Button/Card/Avatar) + Tailwind v4
 ```
 
 ---
@@ -249,6 +249,6 @@ Nothing — greenfield empty directory. No code, no git, no docs to reuse. pnpm 
 ## Open DX Debt → TODOS (proposed)
 
 1. **True SSR-safe measurement** (v1.1) — auto-measure that doesn't render a 0px box server-side.
-2. **Live playground site** (when adopted) — promote StackBlitz link into a hosted docs/playground; this is also the trigger to revisit the monorepo decision.
+2. ~~**Live playground site**~~ — **done**: `packages/demo` is the hosted showcase (GitHub Pages). This was the trigger that resolved the monorepo decision (now a pnpm workspace).
 3. **Animation variants** (`pulse | none`) — only if requested by real users.
 4. **Template-measured skeleton** (v1.1) — `template?: ReactNode`: render a *populated* sample of the component offscreen, walk **its** DOM, and use that as the skeleton. Closes the case the v1 live-children walker structurally can't — components that `return null` or render empty lists during loading — because the template always has data (so the structure exists to measure). Needs an offscreen-render + SSR / `"use client"` story.

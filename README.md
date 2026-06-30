@@ -7,6 +7,8 @@ Wrap your real component — SkeletonMe measures it and renders a matching place
 
 **Zero runtime dependencies** (just React) · React 18+ · styles auto-injected, no separate CSS import · early `0.x`, API may change before 1.0.
 
+**[Live demo →](https://luctst.github.io/skeletonme/)** — toggle real content ↔ auto-generated skeletons across a few layouts.
+
 ```bash
 pnpm add skeletonme   # or npm / yarn
 ```
