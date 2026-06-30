@@ -48,13 +48,19 @@ an explicit size (or a custom `skeleton`):
 
 In the Next.js App Router, render SkeletonMe in a Client Component (`'use client'`).
 
-## Escape hatches
+## Props
 
-| Prop       | Type                  | Use it when…                                              |
-| ---------- | --------------------- | -------------------------------------------------------- |
-| `skeleton` | `ReactNode`           | Auto-measurement can't capture your layout — supply your own placeholder. |
-| `width`    | `number \| string`    | There are no children to measure yet (SSR / pre-data).   |
-| `height`   | `number \| string`    | Same as `width`.                                         |
+| Prop           | Type                 | Default      | Description                                                                                          |
+| -------------- | -------------------- | ------------ | -------------------------------------------------------------------------------------------------- |
+| `showSkeleton` | `boolean`            | _(required)_ | When `true`, render the skeleton placeholder. When `false`, render `children` untouched.            |
+| `children`     | `ReactNode`          | _(required)_ | Your real content. Measured to auto-size and shape the skeleton.                                    |
+| `skeleton`     | `ReactNode`          | `undefined`  | **Escape hatch.** Render your own placeholder instead of the auto-generated one — use when auto-measurement can't capture your layout. |
+| `width`        | `number \| string`   | `undefined`  | **Escape hatch.** Explicit skeleton width, used when there's nothing to measure (SSR / before data loads). |
+| `height`       | `number \| string`   | `undefined`  | **Escape hatch.** Explicit skeleton height. See `width`.                                            |
+| `className`    | `string`             | `undefined`  | Forwarded to the rendered wrapper / skeleton element.                                               |
+| `style`        | `CSSProperties`      | `undefined`  | Forwarded to the rendered wrapper / skeleton element.                                               |
+
+The three escape hatches (`skeleton`, `width`, `height`) exist for the cases auto-measurement can't handle — a layout it can't capture, or no DOM to measure (SSR / pre-data).
 
 ## Theming
 
