@@ -24,7 +24,10 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
-      - run: pnpm typecheck
-      - run: pnpm test
-      - run: pnpm build
+      # Build first: dependent packages (the demo) typecheck against the lib's
+      # emitted dist/*.d.ts, which doesn't exist until skeletonme is built.
+      # pnpm -r builds in topological order, so the lib is ready before the demo.
+      - run: pnpm -r build
+      - run: pnpm -r lint
+      - run: pnpm -r typecheck
+      - run: pnpm -r test

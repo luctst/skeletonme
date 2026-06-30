@@ -6,14 +6,16 @@
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
     "strict": true,
-    "declaration": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "verbatimModuleSyntax": true,
-    "types": ["vitest/globals"]
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@workspace/ui/*": ["./src/*"]
+    }
   },
-  "include": ["src", "vitest.setup.ts", "vitest.config.ts", "tsup.config.ts", "eslint.config.js"]
+  "include": ["src"]
 }
