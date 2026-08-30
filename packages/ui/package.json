@@ -15,7 +15,7 @@
   "dependencies": {
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "radix-ui": "^1.6.0",
+    "radix-ui": "^1.6.7",
     "tailwind-merge": "^3.6.0"
   },
   "peerDependencies": {
@@ -23,9 +23,9 @@
     "react-dom": ">=18"
   },
   "devDependencies": {
-    "@types/react": "^19.0.2",
-    "@types/react-dom": "^19.0.2",
-    "tailwindcss": "^4.3.2",
-    "typescript": "^5.7.2"
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2"
   }
 }
